@@ -1,0 +1,60 @@
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="text-success">Productos en tiempo real</h1>
+  <a href="/" class="btn btn-secondary">
+    Volver a Home
+  </a>
+</div>
+
+
+
+<div class="card p-3 mb-4 shadow-sm">
+  <form id="productForm" class="row g-3">
+    <div class="col-md-6">
+      <input type="text" name="title" class="form-control" placeholder="Título" required />
+    </div>
+    <div class="col-md-4">
+      <input type="number" name="price" class="form-control" placeholder="Precio" required />
+    </div>
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">Agregar</button>
+    </div>
+  </form>
+</div>
+
+<ul id="productsList" class="list-group shadow"></ul>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  const productForm = document.getElementById('productForm');
+  const productsList = document.getElementById('productsList');
+
+  // Renderizar productos
+  socket.on('products', function(products) {
+    productsList.innerHTML = '';
+    products.forEach(function(p) {
+      const li = document.createElement('li');
+      li.className = "list-group-item d-flex justify-content-between align-items-center";
+      li.innerHTML = `
+        <span><strong>${p.title}</strong> - $${p.price}</span>
+        <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p.id}')">Eliminar</button>
+      `;
+      productsList.appendChild(li);
+    });
+  });
+
+  // Crear producto
+  productForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(productForm));
+    data.price = Number(data.price);
+    socket.emit('newProduct', data);
+    productForm.reset();
+  });
+
+  // Eliminar producto
+  function deleteProduct(id) {
+    socket.emit('deleteProduct', id);
+  }
+</script>

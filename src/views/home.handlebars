@@ -1,0 +1,27 @@
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <a href="/" class="btn btn-transparent">
+  <h1 class="text-success" >Lista de productos (Home)</h1>
+  </a> 
+  
+  <a href="/realtimeproducts" class="btn btn-success">
+    Gestionar Productos
+  </a>
+</div>
+
+<table class="table table-striped table-bordered shadow">
+  <thead class="table-dark">
+    <tr>
+      <th>Título</th>
+      <th>Precio</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each products}}
+      <tr>
+        <td>{{this.title}}</td>
+        <td>${{this.price}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
