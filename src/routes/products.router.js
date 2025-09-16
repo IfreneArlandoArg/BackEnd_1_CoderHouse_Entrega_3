@@ -1,32 +1,48 @@
-import { Router } from 'express';
-import ProductManager from '../managers/ProductManager.js';
+import { Router } from "express";
+import Product from "../models/productSchema.js";
 
 const router = Router();
-const manager = new ProductManager('src/data/products.json');
 
-router.get('/', async (req, res) => {
-  const products = await manager.getProducts();
-  res.json(products);
-});
+router.get("/", async (req, res) => {
+  try {
+    const { limit = 10, page = 1, sort, query } = req.query;
 
-router.get('/:pid', async (req, res) => {
-  const product = await manager.getProductById(req.params.pid);
-  product ? res.json(product) : res.status(404).json({ error: 'Producto no encontrado' });
-});
+    let filter = {};
+    if (query) {
+      if (query === "available") filter.status = true;
+      else filter.category = query;
+    }
 
-router.post('/', async (req, res) => {
-  const result = await manager.addProduct(req.body);
-  res.status(201).json(result);
-});
+    let sortOption = {};
+    if (sort === "asc") sortOption.price = 1;
+    else if (sort === "desc") sortOption.price = -1;
 
-router.put('/:pid', async (req, res) => {
-  const result = await manager.updateProduct(req.params.pid, req.body);
-  res.json(result);
-});
+    const options = {
+      limit: parseInt(limit),
+      page: parseInt(page),
+      sort: sortOption
+    };
 
-router.delete('/:pid', async (req, res) => {
-  const result = await manager.deleteProduct(req.params.pid);
-  res.json(result);
+    // usamos paginate
+    const result = await Product.paginate(filter, options);
+
+    res.json({
+      status: "success",
+      payload: result.docs,
+      totalPages: result.totalPages,
+      prevPage: result.prevPage,
+      nextPage: result.nextPage,
+      page: result.page,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevLink: result.hasPrevPage ? `/api/products?page=${result.prevPage}` : null,
+      nextLink: result.hasNextPage ? `/api/products?page=${result.nextPage}` : null
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ status: "error", error: "Error en servidor" });
+  }
 });
 
 export default router;
