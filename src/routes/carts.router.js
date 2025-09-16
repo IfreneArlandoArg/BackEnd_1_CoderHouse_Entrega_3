@@ -1,7 +1,19 @@
+
 import { Router } from "express";
 import Cart from "../models/cartSchema.js";
 
 const router = Router();
+
+
+// GET todos los carritos
+router.get('/', async (req, res) => {
+  try {
+    const carts = await Cart.find().populate('products.product');
+    res.json({ status: 'success', payload: carts });
+  } catch (error) {
+    res.status(500).json({ status: 'error', error: 'Error al obtener carritos' });
+  }
+});
 
 // GET con populate
 router.get("/:cid", async (req, res) => {
